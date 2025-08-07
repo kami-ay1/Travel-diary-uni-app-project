@@ -1,9 +1,9 @@
 let baseUrl = ""
 //通过环境来判断
 if (process.env.NODE_ENV === 'development') {
-	baseUrl = 'http://localhost:5173/api'
+	baseUrl = 'https://m1.apifoxmock.com/m1/4728220-0-default/api'
 } else {
-	baseUrl = 'https://apifoxmock.com/m1/4728220-0-default/api'
+	baseUrl = 'https://m1.apifoxmock.com/m1/4728220-0-default/api'
 }
 
 export default function http(url, data = {}, method = 'GET') {
