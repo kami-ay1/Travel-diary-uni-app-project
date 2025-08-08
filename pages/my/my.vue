@@ -11,7 +11,7 @@
 					<uni-icons type='chat' size='30' color='#fff'></uni-icons>
 				</view>
 			</view>
-			<view class='users'>
+			<view class='users' @click="setFun()">
 				<view class='u-top'>
 					<template v-if="!userInfo.nickName">
 						<image src="/static/tt.jpg">
@@ -21,9 +21,7 @@
 						</view>
 					</template>
 					<template v-else>
-						<image 
-						:src="userInfo.avatarUrl" 
-						mode='aspectFill'>
+						<image :src="userInfo.avatarUrl" mode='aspectFill'>
 						</image>
 						<view class="tit">
 							{{userInfo.nickName}}
@@ -61,11 +59,52 @@
 		ref,
 		reactive
 	} from 'vue'
-
+	import {
+		login,
+		getUserInfo
+	} from '../../api/api.js'
 	const userInfo = reactive({
 		nickName: '',
 		avatarUrl: ''
 	})
+
+	const setFun = () => {
+		uni.showModal({
+			title: '提示',
+			content: '授权微信登陆后才能正常使用小程序',
+			// success: function (res) {
+			// 	if (res.confirm) {
+			// 		uni.login({
+			// 			 success: function (data) {
+			// 			    console.log(data)
+			// 			  }
+			// 		})
+			// 	} else if (res.cancel) {
+			// 		console.log('用户点击取消')
+			// 	}
+			// }
+			success(res) {
+				if (res.confirm) {
+					uni.login({
+						success:async(data)=> {
+							console.log(data)
+							const {token} = await login(data.code)
+							console.log(token,'token')
+							uni.setStorageSync('token',token)
+							const {avatarUrl,nickName} = await getUserInfo()
+							userInfo.avatarUrl=avatarUrl
+							userInfo.nickName=nickName
+						},
+						fail(err) {
+							console.error('登录失败:', err);
+						}
+					})
+				} else if (res.cancel) {
+					console.log('用户点击取消')
+				}
+			}
+		});
+	}
 </script>
 
 <style lang="scss">
@@ -148,25 +187,29 @@
 					color: #333
 				}
 			}
-			.u-bottom{
+
+			.u-bottom {
 				display: flex;
 				justify-content: space-around;
 				align-items: center;
-				.u-item{
+
+				.u-item {
 					text-align: center;
-					.u-tit{
-						color:#757575;
+
+					.u-tit {
+						color: #757575;
 						font-size: 26rpx;
 						margin-top: 10rpx;
 					}
-					.num{
+
+					.num {
 						color: #000;
 						font-size: 33rpx;
 						font-weight: 700;
 					}
 				}
 			}
-			
+
 		}
 	}
 </style>

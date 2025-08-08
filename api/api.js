@@ -6,3 +6,11 @@ export const getBanner = () => {
 export const getHomeList = ()=>{
 	return http('/user/getHomeList')
 }
+
+export const login = (code)=>{
+	return http('/login',{code},'POST')
+}
+
+export const getUserInfo=()=>{
+	return http('/getUserInfo')
+}
