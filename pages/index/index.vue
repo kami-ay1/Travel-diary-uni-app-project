@@ -8,7 +8,7 @@
 			<up-waterfall v-model="flowList" ref="uWaterfallRef">
 				<template v-slot:left="{leftList}">
 					<view class="demo-warter" v-for="(item, index) in leftList" :key="index">
-						<up-lazy-load threshold="-450" border-radius="10" :image="item.img"
+						<up-lazy-load threshold="300" border-radius="10" :image="item.img"
 							:index="index"></up-lazy-load>
 						<view class="demo-title">
 							{{item.title}}
@@ -31,7 +31,7 @@
 				</template>
 				<template v-slot:right="{rightList}">
 					<view class="demo-warter" v-for="(item, index) in rightList" :key="index">
-						<up-lazy-load threshold="-450" border-radius="10" :image="item.img"
+						<up-lazy-load threshold="300" border-radius="10" :image="item.img"
 							:index="index"></up-lazy-load>
 						<view class="demo-title">
 							{{item.title}}
@@ -122,7 +122,13 @@
 	}
 </script>
 
-<style lang='scss'>
+<style>
+	page {
+		background-color: rgb(240, 240, 240);
+	}
+</style>
+
+<style lang='scss' scoped>
 	.content {
 		padding: 20rpx 20rpx;
 
