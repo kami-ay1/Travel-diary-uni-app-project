@@ -11,7 +11,7 @@
 					<uni-icons type='chat' size='30' color='#fff'></uni-icons>
 				</view>
 			</view>
-			<view class='users' @click="setFun()">
+			<view class='users' @click="setFun">
 				<view class='u-top'>
 					<template v-if="!userInfo.nickName">
 						<image src="/static/tt.jpg">
@@ -49,8 +49,37 @@
 			</view>
 		</view>
 		<view class='listBox'>
-
+			<view class='lists'>
+				<uni-list>
+					<uni-list-item :show-extra-icon="true" :extra-icon='extraIcon1' showArrow title="个人信息"
+						clickable></uni-list-item>
+					<uni-list-item :show-extra-icon="true" :extra-icon='extraIcon2' showArrow title="我的购物车"
+						clickable></uni-list-item>
+					<uni-list-item :show-extra-icon="true" :extra-icon='extraIcon3' showArrow title="用户反馈"
+						clickable></uni-list-item>
+					<uni-list-item :show-extra-icon="true" :extra-icon='extraIcon4' showArrow title="我的邮件"
+						clickable></uni-list-item>
+					<uni-list-item :show-extra-icon="true" :extra-icon='extraIcon5' showArrow title="分享有礼"
+						clickable></uni-list-item>
+				</uni-list>
+			</view>
 		</view>
+		<up-popup closeable :show="isShow" @close="close" round="20">
+			<view class='popup'>
+				<view class='title'>获取您的昵称、头像</view>
+				<view class='flex'>
+					<view class='label'>获取用户头像:</view>
+					<button class='avatar-warpper' open-type="chooseAvatar" @chooseavatar="onChooseavatar">
+						<image class='avatar' :src='userInfo.avatarUrl'></image>
+					</button>
+				</view>
+				<view class='flex'>
+					<view class='label'>获取用户昵称:</view>
+					<input class='input' @input="chageUsername" type="nickname">
+				</view>
+				<button type="primary" size="default" @click="popSubmit">确定</button>
+			</view>
+		</up-popup>
 	</view>
 </template>
 
@@ -63,37 +92,108 @@
 		login,
 		getUserInfo
 	} from '../../api/api.js'
+	import {
+		onLoad
+	} from '@dcloudio/uni-app'
+
+	onLoad(async () => {
+		if (uni.getStorageSync('token') && !uni.getStorageSync('userInfo')) {
+			const {
+				avatarUrl,
+				nickName
+			} = await getUserInfo()
+			userInfo.avatarUrl = avatarUrl
+			userInfo.nickName = nickName
+		} else if (uni.getStorageSync('token') && uni.getStorageSync('userInfo')) {
+			const {
+				avatarUrl,
+				nickName
+			} = JSON.parse(uni.getStorageSync('userInfo'))
+			userInfo.avatarUrl = avatarUrl
+			userInfo.nickName = nickName
+		}
+	})
+
 	const userInfo = reactive({
 		nickName: '',
 		avatarUrl: ''
 	})
+	const isShow = ref(false)
+	const close = () => {
+		isShow.value = false
 
+	}
+	const popSubmit = () => {
+		uni.setStorageSync('userInfo', JSON.stringify(userInfo))
+		isShow.value = false
+
+	}
+
+	const onChooseavatar = (e) => {
+		console.log(e)
+		userInfo.avatarUrl = e.detail.avatarUrl
+	}
+
+	const chageUsername = (e) => {
+		console.log(e)
+		userInfo.nickName = e.detail.value
+	}
+
+	const extraIcon1 = reactive({
+		color: '#666666',
+		size: '22',
+		type: 'auth'
+	})
+	const extraIcon2 = reactive({
+		color: '#666666',
+		size: '22',
+		type: 'cart'
+	})
+	const extraIcon3 = reactive({
+		color: '#666666',
+		size: '22',
+		type: 'chatboxes'
+	})
+	const extraIcon4 = reactive({
+		color: '#666666',
+		size: '22',
+		type: 'email'
+	})
+
+	const extraIcon5 = reactive({
+		color: '#666666',
+		size: '22',
+		type: 'gift'
+	})
+
+
+
+
+	//使用uin.login获取用户数据
 	const setFun = () => {
 		uni.showModal({
 			title: '提示',
 			content: '授权微信登陆后才能正常使用小程序',
-			// success: function (res) {
-			// 	if (res.confirm) {
-			// 		uni.login({
-			// 			 success: function (data) {
-			// 			    console.log(data)
-			// 			  }
-			// 		})
-			// 	} else if (res.cancel) {
-			// 		console.log('用户点击取消')
-			// 	}
-			// }
 			success(res) {
 				if (res.confirm) {
+					//确认后调用uni.login接口获取用户数据
 					uni.login({
-						success:async(data)=> {
-							console.log(data)
-							const {token} = await login(data.code)
-							console.log(token,'token')
-							uni.setStorageSync('token',token)
-							const {avatarUrl,nickName} = await getUserInfo()
-							userInfo.avatarUrl=avatarUrl
-							userInfo.nickName=nickName
+						success: async (data) => {
+							console.log(data) // 输出登录凭证 code（微信/支付宝等平台的临时登录凭证）
+							// 调用后端接口，用 code 换取 token
+							const {
+								token
+							} = await login(data.code)
+							console.log(token, 'token')
+							//将token存储到本地
+							uni.setStorageSync('token', token)
+							const {
+								avatarUrl,
+								nickName
+							} = await getUserInfo()
+							userInfo.avatarUrl = avatarUrl
+							userInfo.nickName = nickName
+							isShow.value = true
 						},
 						fail(err) {
 							console.error('登录失败:', err);
@@ -211,5 +311,54 @@
 			}
 
 		}
+
+		.popup {
+			padding: 20rpx;
+			border-radius: 20rpx 20rpx 0 0;
+
+			.title {
+				font-size: 40rpx;
+				margin-bottom: 20rpx;
+				text-align: center;
+			}
+
+			.flex {
+				display: flex;
+				justify-content: flex-start;
+				align-items: center;
+				border-bottom: 1px solid #f5f5f5;
+				padding: 24rpx 0;
+
+				image {
+					width: 70rpx;
+					height: 70rpx;
+
+				}
+
+				.avatar-warpper {
+					border: none;
+					border-radius: 10rpx;
+					width: 70rpx;
+					height: 70rpx;
+					margin-left: 20rpx;
+					padding: 0;
+
+				}
+
+				.input {
+					margin-left: 20rpx;
+					padding: 0;
+				}
+
+			}
+		}
+		.listBox{
+			height: 200rpx;
+			margin: -10rpx 0 auto;
+			padding: 20rpx;
+			box-sizing: border-box;
+			border-radius: 12rpx;
+		}
+
 	}
 </style>
